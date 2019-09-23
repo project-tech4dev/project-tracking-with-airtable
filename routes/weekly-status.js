@@ -38,8 +38,8 @@ router.get('/fridayreminder', (req, res, next) => {
 
     base('Projects').select({
         // Selecting the first 3 records in Main View:
-        maxRecords: 3,
-        view: "Main View"
+        maxRecords: 25,
+        view: "Active programs"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
 

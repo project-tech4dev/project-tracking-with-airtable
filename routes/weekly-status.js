@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 router.get('', (req, res, next) => {
     const baseTemplate = `
     <html>
@@ -28,6 +31,33 @@ router.get('', (req, res, next) => {
 
 router.get('/fridayreminder', (req, res, next) => {
     // fetch all the active projects
+    var Airtable = require('airtable');
+    var base = new Airtable({
+        apiKey: process.env.AIRTABLE_API_KEY
+    }).base('appfO9PMTzzFk9466');
+
+    base('Projects').select({
+        // Selecting the first 3 records in Main View:
+        maxRecords: 3,
+        view: "Main View"
+    }).eachPage(function page(records, fetchNextPage) {
+        // This function (`page`) will get called for each page of records.
+
+        records.forEach(function (record) {
+            console.log('Retrieved', record.get('Project Name'));
+        });
+
+        // To fetch the next page of records, call `fetchNextPage`.
+        // If there are more records, `page` will get called again.
+        // If there are no more records, `done` will get called.
+        fetchNextPage();
+
+    }, function done(err) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+    });
 
     // find the partner poc for active projects
 

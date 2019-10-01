@@ -8,19 +8,14 @@ var transporter = callNodeMail;
 router.get('', (req, res, next) => {
     const baseTemplate = `<html>
         <head>
-            <title>Weekly Status</title>
+            <title>Communication Status</title>
         </head>
         <body>
-            <h2>Weekly Status</h2>
+            <h2>Communication Status</h2>
             <ul>
                 <li>
-                    <a href='/weeklystatus/fridayreminder'>
-                        Send Friday Reminder
-                    </a>
-                </li>
-                <li>
-                    <a href='/weeklystatus/mondayreminder'>
-                        Send Monday Reminder
+                    <a href='/monthlycommunicationstatus/t4d_ngo_reminder'>
+                        Communication Reminder
                     </a>
                 </li>
             </ul>
@@ -28,7 +23,7 @@ router.get('', (req, res, next) => {
     </html>`;
     res.status(200).end(baseTemplate);
 });
-router.get('/fridayreminder', (req, res, next) => {
+router.get('/t4d_ngo_reminder', (req, res, next) => {
     // fetch all the active projects
     var partnerPoc = [];
     var Airtable = require('airtable');
@@ -81,83 +76,17 @@ router.get('/fridayreminder', (req, res, next) => {
                             });
                         }
                         if (i == j) {
-                            getPocEmailId(projectPocDetails);
-                            res.status(200).end("Friday reminder sent successfully!");
-                        }
-                    });
-                });
-            });
-        }
-    });
-});
-router.get('/mondayreminder', (req, res, next) => {
-    // fetch all the active projects
-    // find the partner poc for active projects
-    // fetch all the active projects
-    var partnerPoc = [];
-    var Airtable = require('airtable');
-    var base = new Airtable({
-        apiKey: process.env.AIRTABLE_API_KEY
-    }).base('appfO9PMTzzFk9466');
-    base('Projects').select({
-        // Selecting the first 25 records in Main View:
-        view: "Active Projects Poc"
-    }).eachPage(function page(records, fetchNextPage) {
-        // This function (`page`) will get called for each page of records.
-        records.forEach(function (record) {
-            //record.get('Partner PoC');
-            var projectID = record.id;
-            var projectName = record.get('Project Name');
-            var pocs = record.get('Partner PoC');
-            partnerPoc.push({ 'Project ID': projectID, 'Project Name': projectName, 'Partner Poc': pocs });
-        });
-        // To fetch the next page of records, call `fetchNextPage`.
-        // If there are more records, `page` will get called again.
-        // If there are no more records, `done` will get called.
-        fetchNextPage();
-    }, function done(err) {
-        if (err) {
-            console.error(err);
-            return;
-        } else {
-            var projectPocDetails = [];
-            var i = 0;
-            var j = 0;
-            partnerPoc.forEach(function (pocs, index) {
-                var projectID = pocs['Project ID'];
-                var projectName = pocs['Project Name'];
-                var partnerPocs = pocs['Partner Poc'];
-                var pocArray = [];
-                i = i + partnerPocs.length;
-                // find the partner poc for active projects
-                projectPocDetails.push({ 'Project ID': projectID, 'Project Name': projectName, 'Partner Poc': pocArray, 'activity exists': false });
-                partnerPocs.forEach(function (partnerPoc) {
-                    base('Contacts').find(partnerPoc, function (err, record) {
-                        j = j + 1;
-                        if (err) { 
-                            console.error(err); 
-                            return; 
-                        }else {
-                            projectPocDetails.forEach(function (projectPocDetail) {
-                                if (projectName == projectPocDetail['Project Name']) {
-                                    var contactName = record.get('Name');
-                                    var contactEmail = record.get('Email');
-                                    projectPocDetail['Partner Poc'].push({ 'Name': contactName, 'Email': contactEmail });
-                                }
-                            });
-                        }
-                        if (i == j) {
                             projectPocDetails.forEach(function (projectPocDetail, index) {
                                 var activityExists = false;
                                 base('Activity').select({
-                                    view: "Weekly Status"
+                                    view: "T4D Communication Status"
                                 }).eachPage(function page(records, fetchNextPage) {
                                     // This function (`page`) will get called for each page of records.
                                     var projectID = projectPocDetail['Project ID'];
                                     records.forEach(function (record) {
                                         var projects = record.get('Project');
                                         projects.forEach(function (project) {
-                                            if (projectID == project) {
+                                            if (projectID != project) {
                                                 activityExists = true;
                                             }
                                         });
@@ -182,11 +111,8 @@ router.get('/mondayreminder', (req, res, next) => {
             });
         }
     });
-    // check for active projects that does not have weekly status activity since Friday - Monday
-    // send second reminder email to above project partner POCS
-    res.status(200).end("Monday reminder sent successfuly!");
+    res.status(200).end("Communication reminder sent successfuly!");
 });
-// send a reminder email to add weekly status activity
 var getPocEmailId = function (pocDetails) {
     pocDetails.forEach(function (pocDetail) {
         if (pocDetail['activity exists'] == false) {
@@ -209,8 +135,8 @@ var sendEmail = function (projectName, pocName, pocEmails) {
     var mailOptions = {
         from: process.env.FROM_EMAIL,
         to: 'priyanka.shirude@webaccessglobal.com',
-        subject: 'Weekly Status Reminder',
-        html: '<p>Hello ' + pocName + ',</p><p> This is the reminder to fill weekly status report for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the report. </p><p> <a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
+        subject: 'Communication Status Reminder',
+        html: '<p>Hello ' + ',</p><p> This is the reminder to have communication for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the report. </p><p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
     };
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {

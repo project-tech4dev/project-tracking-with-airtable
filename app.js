@@ -3,6 +3,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const activityRoutes = require('./routes/weekly-status');
+const activityMonthlyRoutes = require('./routes/monthly-blog');
+const projectReview = require('./routes/project-review');
+const weeklySpNgoCommunication = require('./routes/communication-sp-ngo');
+const monthlyT4dNgoCommunication = require('./routes/communication-t4d-ngo');
 
 const app = express();
 
@@ -24,5 +28,9 @@ app.use((req, res, next) => {
 });
 
 app.use('/weeklystatus', activityRoutes);
+app.use('/monthlystatus', activityMonthlyRoutes);
+app.use('/activitystatus', projectReview);
+app.use('/weeklycommunicationstatus',weeklySpNgoCommunication);
+app.use('/monthlycommunicationstatus',monthlyT4dNgoCommunication);
 
 module.exports = app;

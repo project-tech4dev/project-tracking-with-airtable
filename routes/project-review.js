@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const dotenv = require('dotenv');
 dotenv.config();
-const callNodeMail = require('./nodeMail');
+const callNodeMail = require('../config/mail');
 var transporter = callNodeMail;
 
 router.get('', (req, res, next) => {
@@ -62,7 +62,6 @@ router.get('/project_review', (req, res, next) => {
                     records.forEach(function (record) {
                         var activityType = record.get('Type');
                         var project = record.get('Project');
-                        console.log('Project Names = ', activityProjectNames);
                         if (projectID == project) {
                             activityTypes.forEach(function (activityType) {
                                 if (activityType == "Project Review") {
@@ -79,7 +78,6 @@ router.get('/project_review', (req, res, next) => {
                     } else {
                         if (!activityPreviewExist)
                             sendEmail(projectName);
-                            // console.log("End");
                     }
                 });
             });
@@ -91,7 +89,7 @@ router.get('/project_review', (req, res, next) => {
 var sendEmail = function (projectName) {
     var mailOptions = {
         from: process.env.FROM_EMAIL,
-        to: 'priyanka.shirude@webaccessglobal.com',
+        to: process.env.FROM_EMAIL,
         subject: 'Project Review Reminder',
         html: '<p>Hello,</p><p> This is the reminder to fill project review for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the project review. </p><p> <a href="https://airtable.com/shrEPvmxyRmiAjjjU">https://airtable.com/shrEPvmxyRmiAjjjU</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
     };

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const dotenv = require('dotenv');
 dotenv.config();
-const callNodeMail = require('./nodeMail');
+const callNodeMail = require('../config/mail');
 var transporter = callNodeMail;
 
 router.get('', (req, res, next) => {
@@ -133,7 +133,7 @@ var getPocEmailId = function (pocDetails) {
 var sendEmail = function (projectName, pocName, pocEmails) {
     var mailOptions = {
         from: process.env.FROM_EMAIL,
-        to: 'priyanka.shirude@webaccessglobal.com',
+        to: pocEmails,
         subject: 'Weekly Communication Status Reminder',
         html: '<p>Hello ' + pocName + ',</p><p> This is the reminder to have communication for the project <b>' + projectName + '</b>. </p><p> Please have communication.</p><p> Thanks & Regards, <br> Tech4Dev</p>'
     };

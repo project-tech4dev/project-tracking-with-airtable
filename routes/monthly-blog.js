@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const dotenv = require('dotenv');
 dotenv.config();
-const callNodeMail = require('./nodeMail');
+const callNodeMail = require('../config/mail');
 var transporter = callNodeMail;
 
 router.get('', (req, res, next) => {
@@ -43,7 +43,6 @@ router.get('/blog_reminder', (req, res, next) => {
                 partnerPoc.push({ 'Project Name': projectName, 'Partner Poc': pocs });
             }
         });
-        console.log(partnerPoc);
         // To fetch the next page of records, call `fetchNextPage`.
         // If there are more records, `page` will get called again.
         // If there are no more records, `done` will get called.
@@ -115,7 +114,7 @@ var getPocEmailId = function (pocDetails) {
 var sendBlogReminder = function (projectName, pocName, pocEmails) {
     var mailOptions = {
         from: process.env.FROM_EMAIL,
-        to: 'priyanka.shirude@webaccessglobal.com',
+        to: pocEmails,
         subject: 'Monthly Blog Reminder',
         html: '<p>Hello ' + pocName + ',</p><p> This is the reminder to fill monthly blog for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the blog. </p><p> <a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
     };

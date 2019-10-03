@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const dotenv = require('dotenv');
 dotenv.config();
-const callNodeMail = require('./nodeMail');
+const callNodeMail = require('../config/mail');
 var transporter = callNodeMail;
 
 router.get('', (req, res, next) => {
@@ -131,10 +131,10 @@ var getPocEmailId = function (pocDetails) {
         }
     });
 }
-var sendEmail = function (projectName, pocName, pocEmails) {
+var sendEmail = function (projectName, pocName) {
     var mailOptions = {
         from: process.env.FROM_EMAIL,
-        to: 'priyanka.shirude@webaccessglobal.com',
+        to: process.env.FROM_EMAIL,
         subject: 'Communication Status Reminder',
         html: '<p>Hello ' + ',</p><p> This is the reminder to have communication for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the report. </p><p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
     };

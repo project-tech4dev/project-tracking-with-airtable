@@ -81,7 +81,8 @@ router.get('/fridayreminder', (req, res, next) => {
                             });
                         }
                         if (i == j) {
-                            getPocEmailId(projectPocDetails);
+                            var fridayMsg = "This is a gentle reminder to fill the weekly project status report for the project ";
+                            getPocEmailId(projectPocDetails,fridayMsg);
                             res.status(200).end("Friday reminder sent successfully!");
                         }
                     });
@@ -171,8 +172,9 @@ router.get('/mondayreminder', (req, res, next) => {
                                         console.error(err); 
                                         return; 
                                     } else {
+                                        var mondayMsg = "You have not filled the weekly project status report for the project ";
                                         projectPocDetail['activity exists'] = activityExists;
-                                        getPocEmailId([projectPocDetail]);
+                                        getPocEmailId([projectPocDetail],mondayMsg);
                                     }
                                 });
                             });
@@ -187,7 +189,7 @@ router.get('/mondayreminder', (req, res, next) => {
     res.status(200).end("Monday reminder sent successfuly!");
 });
 // send a reminder email to add weekly status activity
-var getPocEmailId = function (pocDetails) {
+var getPocEmailId = function (pocDetails,msg) {
     pocDetails.forEach(function (pocDetail) {
         if (pocDetail['activity exists'] == false) {
             var projectName = pocDetail['Project Name'];
@@ -201,16 +203,16 @@ var getPocEmailId = function (pocDetails) {
                     emails += ", ";
                 }
             });
-            sendEmail(projectName, names, emails);
+            sendEmail(projectName, names, emails,msg);
         }
     });
 }
-var sendEmail = function (projectName, pocName, pocEmails) {
+var sendEmail = function (projectName, pocName, pocEmails,msg) {
     var mailOptions = {
         from: process.env.FROM_EMAIL,
         to: pocEmails,
-        subject: 'Weekly Status Reminder',
-        html: '<p>Hello ' + pocName + ',</p><p> This is the reminder to fill weekly status report for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the report. </p><p> <a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
+        subject: 'Weekly Project Status Reminder',
+        html: '<p>Dear ' + pocName + ',</p><p>' + msg + '<b>' + projectName + '</b>. </p><p> You can submit it using below link. </p><p> <a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a> </p><p> Thanks, <br> Tech4Dev Team</p>'
     };
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {

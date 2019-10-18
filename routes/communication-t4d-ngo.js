@@ -86,7 +86,7 @@ router.get('/t4d_ngo_reminder', (req, res, next) => {
                                     records.forEach(function (record) {
                                         var projects = record.get('Project');
                                         projects.forEach(function (project) {
-                                            if (projectID != project) {
+                                            if (projectID == project) {
                                                 activityExists = true;
                                             }
                                         });
@@ -135,8 +135,8 @@ var sendEmail = function (projectName, pocName) {
     var mailOptions = {
         from: process.env.FROM_EMAIL,
         to: process.env.FROM_EMAIL,
-        subject: 'Communication Status Reminder',
-        html: '<p>Hello ' + ',</p><p> This is the reminder to have communication for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the report. </p><p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
+        subject: 'NGO Meeting Reminder',
+        html: '<p>Dear ' + pocName + ',</p><p> This is a gentle reminder to fill your meeting update with the NGO for the project <b>' + projectName + '</b>. </p><p> Please submit your notes using the below link. </p><p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p><p> Thanks, <br> Tech4Dev Team</p>'
     };
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {

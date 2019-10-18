@@ -116,7 +116,7 @@ var sendBlogReminder = function (projectName, pocName, pocEmails) {
         from: process.env.FROM_EMAIL,
         to: pocEmails,
         subject: 'Monthly Blog Reminder',
-        html: '<p>Hello ' + pocName + ',</p><p> This is the reminder to fill monthly blog for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the blog. </p><p> <a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
+        html: '<p>Dear ' + pocName + ',</p><p> This email is a gentle reminder to submit a blog for the project <b>' + projectName + '</b>. Please include the blog URL in your weekly status report. </p><p> Thanks, <br> Tech4Dev Team</p>'
     };
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {

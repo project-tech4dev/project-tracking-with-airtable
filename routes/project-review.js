@@ -60,7 +60,7 @@ router.get('/project_review', (req, res, next) => {
                 }).eachPage(function page(records, fetchNextPage) {
                     // This function (`page`) will get called for each page of records.
                     records.forEach(function (record) {
-                        var activityType = record.get('Type');
+                        activityTypes = record.get('Type');
                         var project = record.get('Project');
                         if (projectID == project) {
                             activityTypes.forEach(function (activityType) {

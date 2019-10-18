@@ -85,7 +85,7 @@ router.get('/sp_ngo_reminder', (req, res, next) => {
                                     records.forEach(function (record) {
                                         var projects = record.get('Project');
                                         projects.forEach(function (project) {
-                                            if (projectID != project) {
+                                            if (projectID == project) {
                                                 activityExists = true;
                                             }
                                         });
@@ -135,7 +135,7 @@ var sendEmail = function (projectName, pocName, pocEmails) {
         from: process.env.FROM_EMAIL,
         to: pocEmails,
         subject: 'Weekly Communication Status Reminder',
-        html: '<p>Hello ' + pocName + ',</p><p> This is the reminder to have communication for the project <b>' + projectName + '</b>. </p><p> Please have communication.</p><p> Thanks & Regards, <br> Tech4Dev</p>'
+        html: '<p>Dear ' + pocName + ',</p><p> This is a gentle reminder to fill the weekly communication report with the NGO for the project <b>' + projectName + '</b>. </p><p> You can submit it using below link. </p><p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p><p> Thanks, <br> Tech4Dev Team</p>'
     };
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {

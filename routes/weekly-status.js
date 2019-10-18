@@ -81,7 +81,7 @@ router.get('/fridayreminder', (req, res, next) => {
                             });
                         }
                         if (i == j) {
-                            var fridayMsg = "This is a gentle reminder to fill the weekly project status report on Monday for the project ";
+                            var fridayMsg = "This is a gentle reminder to fill the weekly project status report by Monday for the project ";
                             getPocEmailId(projectPocDetails,fridayMsg);
                             res.status(200).end("Friday reminder sent successfully!");
                         }

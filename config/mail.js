@@ -1,10 +1,12 @@
 var nodemailer = require('nodemailer');
-var sgTransport = require('nodemailer-sendgrid-transport');
-var optionsSendgrid = {
+var optionMail = {
+    host: 'smtp.googlemail.com', // Gmail Host
+    port: 465, // Port
+    secure: true, // this is true as port is 465
     auth: {
-        api_user: process.env.SENDGRID_USER,
-        api_key: process.env.SENDGRID_PASSWORD
+        user: process.env.GMAIL_USERNAME, //Gmail username
+        pass: process.env.GMAIL_PASSWORD // Gmail password
     }
 }
-var transporterSendgrid = nodemailer.createTransport(sgTransport(optionsSendgrid));
-module.exports = transporterSendgrid;
+var transporter = nodemailer.createTransport(optionMail);
+module.exports = transporter;

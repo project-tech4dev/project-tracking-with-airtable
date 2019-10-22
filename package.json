@@ -24,8 +24,10 @@
   "homepage": "https://github.com/tech4dev-india/project-tracking-with-airtable#readme",
   "dependencies": {
     "airtable": "^0.7.1",
+    "date-format": "^2.1.0",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
+    "moment": "^2.24.0",
     "nodemailer": "^6.3.0",
     "nodemailer-sendgrid-transport": "^0.2.0"
   },

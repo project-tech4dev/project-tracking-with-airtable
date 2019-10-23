@@ -93,7 +93,7 @@ router.get('/fridayreminder', (req, res, next) => {
                             var formattedDate = moment(currentDate).format('MMM-DD');
                             var previousFormatteddate = moment(previousDate).format('MMM-DD');
                             var fridayMsg = "This is a gentle reminder to fill the weekly project status report for the work done during the period: " + previousFormatteddate + " to " + formattedDate + " by Monday for the project ";
-                            getPocEmailId(projectPocDetails,fridayMsg);
+                            getPocEmailId(projectPocDetails, fridayMsg);
                             res.status(200).end("Friday reminder sent successfully!");
                         }
                     });
@@ -146,10 +146,10 @@ router.get('/mondayreminder', (req, res, next) => {
                 partnerPocs.forEach(function (partnerPoc) {
                     base('Contacts').find(partnerPoc, function (err, record) {
                         j = j + 1;
-                        if (err) { 
-                            console.error(err); 
-                            return; 
-                        }else {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        } else {
                             projectPocDetails.forEach(function (projectPocDetail) {
                                 if (projectName == projectPocDetail['Project Name']) {
                                     var contactName = record.get('Name');
@@ -179,13 +179,13 @@ router.get('/mondayreminder', (req, res, next) => {
                                     // If there are no more records, `done` will get called.
                                     fetchNextPage();
                                 }, function done(err) {
-                                    if (err) { 
-                                        console.error(err); 
-                                        return; 
+                                    if (err) {
+                                        console.error(err);
+                                        return;
                                     } else {
                                         var mondayMsg = "You have not filled the weekly project status report for the project ";
                                         projectPocDetail['activity exists'] = activityExists;
-                                        getPocEmailId([projectPocDetail],mondayMsg);
+                                        getPocEmailId([projectPocDetail], mondayMsg);
                                     }
                                 });
                             });
@@ -245,10 +245,10 @@ router.get('/wednesdayreminder', (req, res, next) => {
                 partnerPocs.forEach(function (partnerPoc) {
                     base('Contacts').find(partnerPoc, function (err, record) {
                         j = j + 1;
-                        if (err) { 
-                            console.error(err); 
-                            return; 
-                        }else {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        } else {
                             projectPocDetails.forEach(function (projectPocDetail) {
                                 if (projectName == projectPocDetail['Project Name']) {
                                     var contactName = record.get('Name');
@@ -278,13 +278,13 @@ router.get('/wednesdayreminder', (req, res, next) => {
                                     // If there are no more records, `done` will get called.
                                     fetchNextPage();
                                 }, function done(err) {
-                                    if (err) { 
-                                        console.error(err); 
-                                        return; 
+                                    if (err) {
+                                        console.error(err);
+                                        return;
                                     } else {
                                         var wednesdayMsg = "You have not filled the weekly project status report for the project ";
                                         projectPocDetail['activity exists'] = activityExists;
-                                        getProjectPocEmailId([projectPocDetail],wednesdayMsg);
+                                        getProjectPocEmailId([projectPocDetail], wednesdayMsg);
                                     }
                                 });
                             });
@@ -301,7 +301,7 @@ router.get('/wednesdayreminder', (req, res, next) => {
 
 
 // send a reminder email to add weekly status activity
-var getPocEmailId = function (pocDetails,msg) {
+var getPocEmailId = function (pocDetails, msg) {
     pocDetails.forEach(function (pocDetail) {
         if (pocDetail['activity exists'] == false) {
             var projectName = pocDetail['Project Name'];
@@ -315,11 +315,11 @@ var getPocEmailId = function (pocDetails,msg) {
                     emails += ", ";
                 }
             });
-            sendEmail(projectName, names, emails,msg);
+            sendEmail(projectName, names, emails, msg);
         }
     });
 }
-var sendEmail = function (projectName, pocName, pocEmails,msg) {
+var sendEmail = function (projectName, pocName, pocEmails, msg) {
     var mailOptions = {
         from: process.env.FROM_EMAIL,
         to: pocEmails,
@@ -334,7 +334,7 @@ var sendEmail = function (projectName, pocName, pocEmails,msg) {
         }
     });
 }
-var getProjectPocEmailId = function (pocDetails,msg) {
+var getProjectPocEmailId = function (pocDetails, msg) {
     pocDetails.forEach(function (pocDetail) {
         if (pocDetail['activity exists'] == false) {
             var projectName = pocDetail['Project Name'];
@@ -348,15 +348,19 @@ var getProjectPocEmailId = function (pocDetails,msg) {
                     emails += ", ";
                 }
             });
-            sendWednesdayEmail(projectName, names, emails,msg);
+            sendWednesdayEmail(projectName, names, emails, msg);
         }
     });
 }
-var sendWednesdayEmail = function (projectName, pocName, pocEmails,msg) {
+var sendWednesdayEmail = function (projectName, pocName, pocEmails, msg) {
+    let toEmail = pocEmails;
+    if (process.env.DEBUG == 1) {
+        toEmail = process.env.DEBUG_EMAIL;
+    }
     var mailOptions = {
         from: process.env.FROM_EMAIL,
-        to: pocEmails,
-        cc: process.env.FROM_EMAIL,
+        to: toEmail,
+        cc: process.env.REPORTING_EMAIL,
         subject: 'Weekly Project Status Reminder',
         html: '<p>Dear ' + pocName + ',</p><p>' + msg + '<b>' + projectName + '</b>. </p><p> You can submit it using below link. </p><p> <a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a> </p><p> Thanks, <br> Tech4Dev Team</p>'
     };

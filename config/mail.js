@@ -1,8 +1,6 @@
 var nodemailer = require('nodemailer');
 var optionMail = {
-    host: 'smtp.googlemail.com', // Gmail Host
-    port: 465, // Port
-    secure: true, // this is true as port is 465
+    service: 'gmail',
     auth: {
         user: process.env.GMAIL_USERNAME, //Gmail username
         pass: process.env.GMAIL_PASSWORD // Gmail password

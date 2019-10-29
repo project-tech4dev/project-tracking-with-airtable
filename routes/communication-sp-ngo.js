@@ -31,7 +31,7 @@ router.get('/sp_ngo_reminder', (req, res, next) => {
         apiKey: process.env.AIRTABLE_API_KEY
     }).base('appfO9PMTzzFk9466');
     base('Projects').select({
-        view: "Active Projects Poc"
+        view: "Active Projects Poc (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
@@ -78,7 +78,7 @@ router.get('/sp_ngo_reminder', (req, res, next) => {
                             projectPocDetails.forEach(function (projectPocDetail, index) {
                                 var activityExists = false;
                                 base('Activity').select({
-                                    view: "NGO Communication Status"
+                                    view: "NGO Communication Status (Do not modify)"
                                 }).eachPage(function page(records, fetchNextPage) {
                                     // This function (`page`) will get called for each page of records.
                                     var projectID = projectPocDetail['Project ID'];
@@ -95,9 +95,9 @@ router.get('/sp_ngo_reminder', (req, res, next) => {
                                     // If there are no more records, `done` will get called.
                                     fetchNextPage();
                                 }, function done(err) {
-                                    if (err) { 
-                                        console.error(err); 
-                                        return; 
+                                    if (err) {
+                                        console.error(err);
+                                        return;
                                     } else {
                                         projectPocDetail['activity exists'] = activityExists;
                                         getPocEmailId([projectPocDetail]);
@@ -126,22 +126,14 @@ var getPocEmailId = function (pocDetails) {
                     emails += ", ";
                 }
             });
-            sendEmail(projectName, names, emails);
-        }
-    });
-}
-var sendEmail = function (projectName, pocName, pocEmails) {
-    var mailOptions = {
-        from: process.env.FROM_EMAIL,
-        to: pocEmails,
-        subject: 'Weekly Communication Status Reminder',
-        html: '<p>Dear ' + pocName + ',</p><p> This is a gentle reminder to fill the weekly communication report with the NGO for the project <b>' + projectName + '</b>. </p><p> You can submit it using below link. </p><p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p><p> Thanks, <br> Tech4Dev Team</p>'
-    };
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info);
+            var subject = 'Weekly Communication Status Reminder';
+            var body = `<p>Dear ${names},</p>
+            <p>This is a gentle reminder to fill the weekly communication report with the NGO for the project '${projectName}'.</p>
+            <p>You can submit it using below link.</p>
+            <p><a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a></p>
+            <p>Thanks, </p>
+            <p>Tech4Dev Team</p>`;
+            transporter(projectName, names, emails, subject, body, false);
         }
     });
 }

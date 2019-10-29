@@ -32,7 +32,7 @@ router.get('/blog_reminder', (req, res, next) => {
         apiKey: process.env.AIRTABLE_API_KEY
     }).base('appfO9PMTzzFk9466');
     base('Projects').select({
-        view: "Active Project Summary"
+        view: "Active Project Summary (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
@@ -52,7 +52,7 @@ router.get('/blog_reminder', (req, res, next) => {
             console.error(err);
             return;
         } else {
-            if(partnerPoc.length == 0){
+            if (partnerPoc.length == 0) {
                 res.status(200).end("No user found!");
             }
             var projectPocDetails = [];
@@ -106,25 +106,14 @@ var getPocEmailId = function (pocDetails) {
                     emails += ", ";
                 }
             });
-            sendBlogReminder(projectName, names, emails);
-            console.log('See', emails);
+            var subject = 'Monthly Blog Reminder';
+            var body = `<p>Dear ${names},</p>
+            <p>This email is a gentle reminder to submit a blog for the project '${projectName}'. 
+            <p>Please include the blog URL in your weekly status report.</p>
+            <p>Thanks, </p> 
+            <p>Tech4Dev Team</p>`
+            transporter(projectName, names, emails, subject, body, false);
         }
     });
 }
-var sendBlogReminder = function (projectName, pocName, pocEmails) {
-    var mailOptions = {
-        from: process.env.FROM_EMAIL,
-        to: pocEmails,
-        subject: 'Monthly Blog Reminder',
-        html: '<p>Dear ' + pocName + ',</p><p> This email is a gentle reminder to submit a blog for the project <b>' + projectName + '</b>. Please include the blog URL in your weekly status report. </p><p> Thanks, <br> Tech4Dev Team</p>'
-    };
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info);
-        }
-    });
-}
-
 module.exports = router;

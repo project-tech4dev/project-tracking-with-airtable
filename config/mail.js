@@ -7,4 +7,28 @@ var optionMail = {
     }
 }
 var transporter = nodemailer.createTransport(optionMail);
-module.exports = transporter;
+
+var sendEmail = function (projectName, pocName, pocEmails, subject, body, addCc) {
+    let toEmail = pocEmails;
+    if (process.env.DEBUG == 1) {
+        toEmail = process.env.DEBUG_EMAIL;
+    }
+    var mailOptions = {
+        from: process.env.FROM_EMAIL,
+        to: toEmail,
+        cc: '',
+        subject: subject,
+        html: body
+    };
+    if (addCc == true) {
+        mailOptions.cc = process.env.REPORTING_EMAIL;
+    }
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info);
+        }
+    });
+}
+module.exports = sendEmail;

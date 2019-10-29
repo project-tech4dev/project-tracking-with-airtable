@@ -31,7 +31,7 @@ router.get('/project_review', (req, res, next) => {
     }).base('appfO9PMTzzFk9466');
     var projNames = [];
     base('Projects').select({
-        view: "Active programs"
+        view: "Active programs (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
@@ -53,14 +53,14 @@ router.get('/project_review', (req, res, next) => {
                 var projectName = pocs['Project Name'];
                 var activityPreviewExist = false;
                 var activityProjectNames = [];
-                var activityTypes = [];
                 activityProjectNames.push({ "Project ID": projectID, "Project": projectName });
                 base('Activity').select({
-                    view: "Project Review Status"
+                    view: "Project Review Status (Do not modify)"
                 }).eachPage(function page(records, fetchNextPage) {
                     // This function (`page`) will get called for each page of records.
                     records.forEach(function (record) {
-                        activityTypes = record.get('Type');
+                        var activityTypes = [];
+                        activityTypes.push(record.get('Type'));
                         var project = record.get('Project');
                         if (projectID == project) {
                             activityTypes.forEach(function (activityType) {
@@ -76,8 +76,15 @@ router.get('/project_review', (req, res, next) => {
                         console.error(err);
                         return;
                     } else {
+                        var subject = 'Project Review Reminder';
+                        var body = `<p>Hello,</p>
+                        <p> This is the reminder to fill project review for the project '${projectName}'. </p>
+                        <p> Please use below link to fill the project review. </p>
+                        <p> <a href="https://airtable.com/shrEPvmxyRmiAjjjU">https://airtable.com/shrEPvmxyRmiAjjjU</a> </p>
+                        <p> Thanks & Regards,</p>
+                        <p> Tech4Dev</p>`;
                         if (!activityPreviewExist)
-                            sendEmail(projectName);
+                            transporter(projectName, "", process.env.FROM_EMAIL, subject, body, false);
                     }
                 });
             });
@@ -85,20 +92,4 @@ router.get('/project_review', (req, res, next) => {
     });
     res.status(200).end("Project Review Reminder Sent Successfully!");
 });
-// send a reminder email to add project review activity
-var sendEmail = function (projectName) {
-    var mailOptions = {
-        from: process.env.FROM_EMAIL,
-        to: process.env.FROM_EMAIL,
-        subject: 'Project Review Reminder',
-        html: '<p>Hello,</p><p> This is the reminder to fill project review for the project <b>' + projectName + '</b>. </p><p> Please use below link to fill the project review. </p><p> <a href="https://airtable.com/shrEPvmxyRmiAjjjU">https://airtable.com/shrEPvmxyRmiAjjjU</a> </p><p> Thanks & Regards, <br> Tech4Dev</p>'
-    };
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info);
-        }
-    });
-}
 module.exports = router;

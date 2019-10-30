@@ -7,6 +7,7 @@ const activityMonthlyRoutes = require('./routes/monthly-blog');
 const projectReview = require('./routes/project-review');
 const weeklySpNgoCommunication = require('./routes/communication-sp-ngo');
 const monthlyT4dNgoCommunication = require('./routes/communication-t4d-ngo');
+const overdueTaskReminder = require('./routes/task-management');
 
 const app = express();
 
@@ -32,5 +33,6 @@ app.use('/monthlystatus', activityMonthlyRoutes);
 app.use('/activitystatus', projectReview);
 app.use('/weeklycommunicationstatus',weeklySpNgoCommunication);
 app.use('/monthlycommunicationstatus',monthlyT4dNgoCommunication);
+app.use('/taskmanagement',overdueTaskReminder);
 
 module.exports = app;

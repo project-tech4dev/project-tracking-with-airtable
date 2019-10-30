@@ -32,7 +32,7 @@ router.get('/t4d_ngo_reminder', (req, res, next) => {
     }).base('appfO9PMTzzFk9466');
     base('Projects').select({
         // Selecting the first 25 records in Main View:
-        view: "Active Projects Poc"
+        view: "Active Projects Poc (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
@@ -79,7 +79,7 @@ router.get('/t4d_ngo_reminder', (req, res, next) => {
                             projectPocDetails.forEach(function (projectPocDetail, index) {
                                 var activityExists = false;
                                 base('Activity').select({
-                                    view: "T4D Communication Status"
+                                    view: "T4D Communication Status (Do not modify)"
                                 }).eachPage(function page(records, fetchNextPage) {
                                     // This function (`page`) will get called for each page of records.
                                     var projectID = projectPocDetail['Project ID'];
@@ -96,9 +96,9 @@ router.get('/t4d_ngo_reminder', (req, res, next) => {
                                     // If there are no more records, `done` will get called.
                                     fetchNextPage();
                                 }, function done(err) {
-                                    if (err) { 
-                                        console.error(err); 
-                                        return; 
+                                    if (err) {
+                                        console.error(err);
+                                        return;
                                     } else {
                                         projectPocDetail['activity exists'] = activityExists;
                                         getPocEmailId([projectPocDetail]);
@@ -127,22 +127,14 @@ var getPocEmailId = function (pocDetails) {
                     emails += ", ";
                 }
             });
-            sendEmail(projectName, names, emails);
-        }
-    });
-}
-var sendEmail = function (projectName, pocName) {
-    var mailOptions = {
-        from: process.env.FROM_EMAIL,
-        to: process.env.FROM_EMAIL,
-        subject: 'NGO Meeting Reminder',
-        html: '<p>Dear ' + pocName + ',</p><p> This is a gentle reminder to fill your meeting update with the NGO for the project <b>' + projectName + '</b>. </p><p> Please submit your notes using the below link. </p><p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p><p> Thanks, <br> Tech4Dev Team</p>'
-    };
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info);
+            var subject = 'NGO Meeting Reminder';
+            var body = `<p>Dear ${names},</p>
+            <p> This is a gentle reminder to fill your meeting update with the NGO for the project '${projectName}'. </p>
+            <p> Please submit your notes using the below link. </p>
+            <p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p>
+            <p> Thanks, </p> 
+            <p> Tech4Dev Team</p>`;
+            transporter(projectName, "", process.env.FROM_EMAIL, subject, body, false);
         }
     });
 }

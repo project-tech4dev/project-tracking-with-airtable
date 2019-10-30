@@ -43,7 +43,7 @@ router.get('/fridayreminder', (req, res, next) => {
     }).base('appfO9PMTzzFk9466');
     base('Projects').select({
         // Selecting the first 25 records in Main View:
-        view: "Active Projects Poc"
+        view: "Active Projects Poc (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
@@ -88,12 +88,10 @@ router.get('/fridayreminder', (req, res, next) => {
                         }
                         if (i == j) {
                             var today = new Date();
-                            var currentDate = Date.now();
-                            var previousDate = today.setDate(today.getDate() - 4);
-                            var formattedDate = moment(currentDate).format('MMM-DD');
-                            var previousFormatteddate = moment(previousDate).format('MMM-DD');
-                            var fridayMsg = "This is a gentle reminder to fill the weekly project status report for the work done during the period: " + previousFormatteddate + " to " + formattedDate + " by Monday for the project ";
-                            getPocEmailId(projectPocDetails, fridayMsg);
+                            var previousDate = moment(today.setDate(today.getDate() - 4)).format('MMM-DD');
+                            var nextDate = moment(today.setDate(today.getDate() + 5)).format('MMM-DD');
+                            var fridayMsg = "This is a gentle reminder to fill the weekly project status report for the work done during the period: " + previousDate + " to " + nextDate + " by Monday for the project ";
+                            getPocEmailId(projectPocDetails, fridayMsg, false);
                             res.status(200).end("Friday reminder sent successfully!");
                         }
                     });
@@ -113,7 +111,7 @@ router.get('/mondayreminder', (req, res, next) => {
     }).base('appfO9PMTzzFk9466');
     base('Projects').select({
         // Selecting the first 25 records in Main View:
-        view: "Active Projects Poc"
+        view: "Active Projects Poc (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
@@ -162,8 +160,9 @@ router.get('/mondayreminder', (req, res, next) => {
                             projectPocDetails.forEach(function (projectPocDetail, index) {
                                 var activityExists = false;
                                 base('Activity').select({
-                                    view: "Weekly Status"
+                                    view: "Weekly Status (Do not modify)"
                                 }).eachPage(function page(records, fetchNextPage) {
+                                    var isActive = records['Type'];
                                     // This function (`page`) will get called for each page of records.
                                     var projectID = projectPocDetail['Project ID'];
                                     records.forEach(function (record) {
@@ -183,9 +182,12 @@ router.get('/mondayreminder', (req, res, next) => {
                                         console.error(err);
                                         return;
                                     } else {
-                                        var mondayMsg = "You have not filled the weekly project status report for the project ";
+                                        var today = new Date();
+                                        var previousDate = moment(today.setDate(today.getDate() - 7)).format('MMM-DD');
+                                        var nextDate = moment(today.setDate(today.getDate() + 5)).format('MMM-DD');
+                                        var mondayMsg = "You have not filled the weekly project status report for the work done during the period: " + previousDate + " to " + nextDate + " for the project ";
                                         projectPocDetail['activity exists'] = activityExists;
-                                        getPocEmailId([projectPocDetail], mondayMsg);
+                                        getPocEmailId([projectPocDetail], mondayMsg, false);
                                     }
                                 });
                             });
@@ -212,7 +214,7 @@ router.get('/wednesdayreminder', (req, res, next) => {
     }).base('appfO9PMTzzFk9466');
     base('Projects').select({
         // Selecting the first 25 records in Main View:
-        view: "Active Projects Poc"
+        view: "Active Projects Poc (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
@@ -261,7 +263,7 @@ router.get('/wednesdayreminder', (req, res, next) => {
                             projectPocDetails.forEach(function (projectPocDetail, index) {
                                 var activityExists = false;
                                 base('Activity').select({
-                                    view: "Weekly Wed Status"
+                                    view: "Weekly Wed Status (Do not modify)"
                                 }).eachPage(function page(records, fetchNextPage) {
                                     // This function (`page`) will get called for each page of records.
                                     var projectID = projectPocDetail['Project ID'];
@@ -282,9 +284,12 @@ router.get('/wednesdayreminder', (req, res, next) => {
                                         console.error(err);
                                         return;
                                     } else {
-                                        var wednesdayMsg = "You have not filled the weekly project status report for the project ";
+                                        var today = new Date();
+                                        var previousDate = moment(today.setDate(today.getDate() - 9)).format('MMM-DD');
+                                        var nextDate = moment(today.setDate(today.getDate() + 5)).format('MMM-DD');
+                                        var wednesdayMsg = "You have not filled the weekly project status report for the work done during the period: " + previousDate + " to " + nextDate + " for the project ";
                                         projectPocDetail['activity exists'] = activityExists;
-                                        getProjectPocEmailId([projectPocDetail], wednesdayMsg);
+                                        getPocEmailId([projectPocDetail], wednesdayMsg, true);
                                     }
                                 });
                             });
@@ -301,7 +306,7 @@ router.get('/wednesdayreminder', (req, res, next) => {
 
 
 // send a reminder email to add weekly status activity
-var getPocEmailId = function (pocDetails, msg) {
+var getPocEmailId = function (pocDetails, msg, addCc) {
     pocDetails.forEach(function (pocDetail) {
         if (pocDetail['activity exists'] == false) {
             var projectName = pocDetail['Project Name'];
@@ -315,60 +320,14 @@ var getPocEmailId = function (pocDetails, msg) {
                     emails += ", ";
                 }
             });
-            sendEmail(projectName, names, emails, msg);
-        }
-    });
-}
-var sendEmail = function (projectName, pocName, pocEmails, msg) {
-    var mailOptions = {
-        from: process.env.FROM_EMAIL,
-        to: pocEmails,
-        subject: 'Weekly Project Status Reminder',
-        html: '<p>Dear ' + pocName + ',</p><p>' + msg + '<b>' + projectName + '</b>. </p><p> You can submit it using below link. </p><p> <a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a> </p><p> Thanks, <br> Tech4Dev Team</p>'
-    };
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info);
-        }
-    });
-}
-var getProjectPocEmailId = function (pocDetails, msg) {
-    pocDetails.forEach(function (pocDetail) {
-        if (pocDetail['activity exists'] == false) {
-            var projectName = pocDetail['Project Name'];
-            var names = "";
-            var emails = "";
-            pocDetail['Partner Poc'].forEach(function (pocNameEmail, index) {
-                names += pocNameEmail['Name'];
-                emails += pocNameEmail['Email'];
-                if (index < pocDetail['Partner Poc'].length - 1) {
-                    names += "/ ";
-                    emails += ", ";
-                }
-            });
-            sendWednesdayEmail(projectName, names, emails, msg);
-        }
-    });
-}
-var sendWednesdayEmail = function (projectName, pocName, pocEmails, msg) {
-    let toEmail = pocEmails;
-    if (process.env.DEBUG == 1) {
-        toEmail = process.env.DEBUG_EMAIL;
-    }
-    var mailOptions = {
-        from: process.env.FROM_EMAIL,
-        to: toEmail,
-        cc: process.env.REPORTING_EMAIL,
-        subject: 'Weekly Project Status Reminder',
-        html: '<p>Dear ' + pocName + ',</p><p>' + msg + '<b>' + projectName + '</b>. </p><p> You can submit it using below link. </p><p> <a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a> </p><p> Thanks, <br> Tech4Dev Team</p>'
-    };
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info);
+            var subject = 'Weekly Project Status Reminder';
+            var body = `<p>Dear ${names},</p>
+            <p>${msg} '${projectName}'.</p>
+            <p>You can submit it using below link.</p>
+            <p><a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a></p>
+            <p>Thanks,</p>
+            <p>Tech4Dev Team</p>`;
+            transporter(projectName, names, emails, subject, body, addCc);
         }
     });
 }

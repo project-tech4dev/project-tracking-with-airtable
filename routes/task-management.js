@@ -140,19 +140,14 @@ router.get('/cloneweeklytask', (req, res, next) => {
         view: "Clone Weekly Task (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         records.forEach(function (record) {
+            var assignedDate = record.get('Assigned Date');
             var dueDate = record.get('Due Date');
+            assignedDate = new Date(assignedDate);
             dueDate = new Date(dueDate);
-            dueDate.setDate(dueDate.getDate() + 1);
-            var incrementAssignDate = 6;
-            if (dueDate.getDay() == 6 || dueDate.getDay() == 7) {
-                dueDate.setDate(dueDate.getDate() + 8 - dueDate.getDay());
-                incrementAssignDate = 4;
-            }
-            var assignedDate = dueDate;
-            formatedAssignedDate = new Date(assignedDate);
-            formatedDueDate = formatedAssignedDate.setDate(formatedAssignedDate.getDate() + incrementAssignDate);
+            assignedDate.setDate(assignedDate.getDate() + 7);
+            dueDate.setDate(dueDate.getDate() + 7);
             assignedDate = dateFormat(assignedDate, "yyyy-mm-dd");
-            formatedDueDate = dateFormat(formatedDueDate, "yyyy-mm-dd");
+            dueDate = dateFormat(dueDate, "yyyy-mm-dd");
             var cloneRecord = {
                 "fields": {
                     "Subject": record.get('Subject'),
@@ -160,7 +155,7 @@ router.get('/cloneweeklytask', (req, res, next) => {
                     "Reporter": record.get('Reporter'),
                     "Target": record.get('Target'),
                     "Assigned Date": assignedDate,
-                    "Due Date": formatedDueDate,
+                    "Due Date": dueDate,
                     "Parent Task": record.get('Parent Task'),
                     "Is Weekly?": record.get('Is Weekly?')
                 }
@@ -170,18 +165,21 @@ router.get('/cloneweeklytask', (req, res, next) => {
         fetchNextPage();
     }, function done(err) {
         if (err) {
+            res.status(500).end(err);
             console.error(err);
             return;
         } else {
             base('Tasks').create(cloneTaskRecords, function (err, records) {
                 if (err) {
+                    res.status(404).end("No record found!");
                     console.error(err);
                     return;
                 }
                 records.forEach(function (record) {
+                    console.log(record.getId());
                 });
+                res.status(200).end("Cloned successfully!");
             });
-            res.status(200).end("Cloned successfully!");
         }
     });
 });

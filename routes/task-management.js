@@ -56,7 +56,7 @@ router.get('/newtaskreminder', (req, res, next) => {
                 if (newTaskList.get(target)) {
                     taskList = newTaskList.get(target);
                 }
-                taskList.push({ "TaskID": taskID, "subject": subject,"assignDate" :assignDate, "dueDate": dueDate  });
+                taskList.push({ "TaskID": taskID, "subject": subject, "assignDate": assignDate, "dueDate": dueDate });
                 newTaskList.set(target, taskList);
             });
         });
@@ -103,7 +103,7 @@ router.get('/duedatereminder', (req, res, next) => {
                 if (newTaskList.get(target)) {
                     taskList = newTaskList.get(target);
                 }
-                taskList.push({ "TaskID": taskID, "subject": subject,"assignDate" :assignDate, "dueDate": dueDate  });
+                taskList.push({ "TaskID": taskID, "subject": subject, "assignDate": assignDate, "dueDate": dueDate });
                 newTaskList.set(target, taskList);
             });
         });
@@ -142,42 +142,44 @@ router.get('/cloneweeklytask', (req, res, next) => {
         records.forEach(function (record) {
             var assignedDate = record.get('Assigned Date');
             var dueDate = record.get('Due Date');
-            assignedDate = new Date();
-            dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 4);
+            assignedDate = new Date(assignedDate);
+            dueDate = new Date(dueDate);
+            assignedDate.setDate(assignedDate.getDate() + 7);
+            dueDate.setDate(dueDate.getDate() + 7);
             assignedDate = dateFormat(assignedDate, "yyyy-mm-dd");
             dueDate = dateFormat(dueDate, "yyyy-mm-dd");
             var cloneRecord = {
                 "fields": {
-                    "Task ID": record.get('Primary Key'),
                     "Subject": record.get('Subject'),
                     "Description": record.get('Description'),
                     "Reporter": record.get('Reporter'),
                     "Target": record.get('Target'),
                     "Assigned Date": assignedDate,
                     "Due Date": dueDate,
-                    "Parent Task": record.get('Parent Task'),   
-                    "Is Weekly?":record.get('Is Weekly?')
+                    "Parent Task": record.get('Parent Task'),
+                    "Is Weekly?": record.get('Is Weekly?')
                 }
             };
             cloneTaskRecords.push(cloneRecord);
-            console.log("Cloned Record:",cloneRecord);
         });
         fetchNextPage();
     }, function done(err) {
         if (err) {
+            res.status(500).end(err);
             console.error(err);
             return;
         } else {
             base('Tasks').create(cloneTaskRecords, function (err, records) {
                 if (err) {
+                    res.status(404).end("No record found!");
                     console.error(err);
                     return;
                 }
                 records.forEach(function (record) {
+                    console.log(record.getId());
                 });
+                res.status(200).end("Cloned successfully!");
             });
-            res.status(200).end("Cloned successfully!");
         }
     });
 });
@@ -189,7 +191,7 @@ var sendTaskReminder = function (targetID, body, subject, base) {
             return;
         } else {
             var targetEmail = record.get('Email');
-            body = "<p>Dear " + record.get('Name') + ",</p>"  + body + "<p> Thanks, <br> Tech4Dev Team</p>";
+            body = "<p>Dear " + record.get('Name') + ",</p>" + body + "<p> Thanks, <br> Tech4Dev Team</p>";
             transporter("", "", targetEmail, subject, body, false);
         }
     });

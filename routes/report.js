@@ -2,7 +2,27 @@ const express = require("express");
 const router = express.Router();
 const dotenv = require('dotenv');
 const Excel = require('exceljs');
+const getExchangeRates = require('get-exchange-rates-usd');
+var Promise = require("bluebird");
+const formatterUSD = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2
+});
+const formatterINR = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2
+})
 dotenv.config();
+var usdRates = 1;
+Promise.try(function () {
+    return getExchangeRates();
+}).then(function (rates) {
+    if (rates) {
+        usdRates = rates.INR;
+    }
+})
 
 router.get('', (req, res, next) => {
     const baseTemplate = `<html>
@@ -14,7 +34,7 @@ router.get('', (req, res, next) => {
             <ul>
                 <li>
                     <a href='/report/firstCohort'>
-                        Send First Cohort Report
+                        Download First Cohort Report
                     </a>
                 </li>
             </ul>
@@ -40,6 +60,7 @@ router.get('/firstCohort', (req, res, next) => {
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
+            var projectId = record.id;
             var ngoName = record.get('NGO Name');
             var ngoSector = record.get('NGO Sector');
             var ngoMission = record.get('NGO Mission');
@@ -49,19 +70,30 @@ router.get('/firstCohort', (req, res, next) => {
             var status = record.get('Status');
             var grade = record.get('Grade');
             var projectCost = record.get('Project Cost');
+            var usdProjectCost = record.get('Project Cost');
             var toolsUsed = record.get('Tools Used');
-            if(ngoName){
-                firstCohortProjects.push({ 
-                    'ngoName': ngoName[0], 
+            if (ngoName) {
+                if (usdProjectCost) {
+                    usdProjectCost = usdProjectCost / usdRates;
+                }
+
+
+                console.log("jhgjhg" + projectCost);
+                firstCohortProjects.push({
+                    'projectId': projectId,
+                    'ngoName': ngoName[0],
                     'ngoSector': ngoSector[0],
-                    'ngoMission' : ngoMission[0],
-                    'spName' : spName[0],
-                    'description' : description,
-                    'estimatedWeeks' : estimatedWeeks,
-                    'status' : status,
-                    'grade' : grade,
-                    'projectCost' : projectCost,
-                    'toolsUsed' : toolsUsed
+                    'ngoMission': ngoMission[0],
+                    'spName': spName[0],
+                    'description': description,
+                    'estimatedWeeks': estimatedWeeks,
+                    'status': status,
+                    'grade': grade,
+                    'projectCost': projectCost != undefined ? formatterINR.format(projectCost) : "",
+                    'usdProjectCost': usdProjectCost != undefined ? formatterUSD.format(usdProjectCost) : "",
+                    'toolsUsed': toolsUsed,
+                    'completed': "",
+                    'comments': ""
                 });
             }
         });
@@ -74,38 +106,89 @@ router.get('/firstCohort', (req, res, next) => {
             console.error(err);
             return;
         } else {
-            const workbook = new Excel.Workbook();
-            const worksheet = workbook.addWorksheet('First Cohort');
-            
-            // add column headers
-            worksheet.columns = [
-            { header: 'NGO Name', key: 'ngoName', width: 20, bold: true },
-            { header: 'NGO Sector', key: 'ngoSector', width: 20 },
-            { header: 'NGO Mission', key: 'ngoMission', width: 20 },
-            { header: 'SP Name', key: 'spName', width: 20 },
-            { header: 'Project Description', key: 'description', width: 20 },
-            { header: 'Weeks Spent', key: 'estimatedWeeks', width: 20 },
-            { header: 'Project Stage', key: 'status', width: 20 },
-            { header: 'Grade', key: 'grade', width: 20 },
-            { header: 'Project Cost (INR)', key: 'projectCost', width: 20 },
-            { header: 'Tools Used', key: 'toolsUsed', width: 20 }
-            ];
+            var ngoCount = 0;
+            var tempNgoCount = 0;
+            firstCohortProjects.forEach(function (firstCohortProject, index) {
+                ngoCount++;
+                var projectID = firstCohortProject['projectId'];
+                var activityPreviewExist = false;
+                var comment = "";
+                var percentCompleted = "";
 
-            var i = 0;
+                base('Activity').select({
+                    view: "Cohort Project Status (Do not modify)"
+                }).eachPage(function page(records, fetchNextPage) {
+                    // This function (`page`) will get called for each page of records.
+                    records.forEach(function (record) {
+                        var project = record.get('Project');
+                        if (projectID == project) {
+                            comment += record.get('Comments');
+                            if (comment != "") {
+                                comment += ", ";
+                            }
+                            percentCompleted = record.get('% Completed');
+                        }
+                    });
+                    fetchNextPage();
+                }, function done(err) {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    } else {
+                        tempNgoCount++;
+                        firstCohortProject["completed"] = percentCompleted;
+                        firstCohortProject["comments"] = comment.replace(/,\s*$/, "");
 
-            worksheet.addRows(firstCohortProjects);
-            var rowCount = worksheet.rowCount;
-            for(i=1;i<=rowCount;i++){
-                worksheet.getRow(i).alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' };
-            }
+                        if (ngoCount == tempNgoCount) {
+                            console.log('completed ', firstCohortProject['completed']);
+                            console.log('ngo name ', firstCohortProject['ngoName']);
+                            const workbook = new Excel.Workbook();
+                            const worksheet = workbook.addWorksheet('First Cohort');
 
-            var fileName = 'report.xlsx';
+                            // add column headers
+                            worksheet.columns = [
+                                { header: 'NGO Name', key: 'ngoName', width: 20, bold: true },
+                                { header: 'NGO Sector', key: 'ngoSector', width: 20 },
+                                { header: 'NGO Mission', key: 'ngoMission', width: 20 },
+                                { header: 'SP Name', key: 'spName', width: 20 },
+                                { header: 'Project Description', key: 'description', width: 40 },
+                                { header: 'Weeks Spent', key: 'estimatedWeeks', width: 20 },
+                                { header: 'Project Stage', key: 'status', width: 20 },
+                                { header: '% Completed', key: 'completed', width: 20 },
+                                { header: 'Grade', key: 'grade', width: 20 },
+                                { header: 'Project Cost (INR)', key: 'projectCost', width: 20 },
+                                { header: 'Project Cost (USD)', key: 'usdProjectCost', width: 20 },
+                                { header: 'Tools Used', key: 'toolsUsed', width: 20 },
+                                { header: 'Comments', key: 'comments', width: 80 }
+                            ];
 
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+                            var i = 0;
 
-            workbook.xlsx.write(res).then(function(){
-                res.end();
+                            worksheet.addRows(firstCohortProjects);
+                            var rowCount = worksheet.rowCount;
+                            for (i = 1; i <= rowCount; i++) {
+                                if (i == 1) {
+                                    let row = worksheet.getRow(i);
+                                    if (row === null || !row.values || !row.values.length) return [];
+                                    for (j = 1; j <= row.values.length; j++) {
+                                        row.getCell(j).font = { bold: true };
+                                    }
+                                }
+                                worksheet.getRow(i).alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' };
+                            }
+
+                            var fileName = 'First_Cohort_Report.xlsx';
+
+                            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                            res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+                            workbook.xlsx.write(res).then(function () {
+                                res.end();
+                            });
+                        }
+                    }
+                });
+
             });
         }
     });

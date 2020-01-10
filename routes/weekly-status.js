@@ -222,7 +222,8 @@ router.get('/wednesdayreminder', (req, res, next) => {
             var projectID = record.id;
             var projectName = record.get('Project Name');
             var pocs = record.get('Partner PoC');
-            partnerPoc.push({ 'Project ID': projectID, 'Project Name': projectName, 'Partner Poc': pocs });
+            var tech4DevPoc = record.get('Tech4Dev PoC');
+            partnerPoc.push({ 'Project ID': projectID, 'Project Name': projectName, 'Partner Poc': pocs, 'Tech4Dev PoC': tech4DevPoc});
         });
         // To fetch the next page of records, call `fetchNextPage`.
         // If there are more records, `page` will get called again.
@@ -240,10 +241,32 @@ router.get('/wednesdayreminder', (req, res, next) => {
                 var projectID = pocs['Project ID'];
                 var projectName = pocs['Project Name'];
                 var partnerPocs = pocs['Partner Poc'];
+                var tech4DevPocs = pocs['Tech4Dev PoC'];
+                if(!tech4DevPocs){
+                    tech4DevPocs=[];
+                }
                 var pocArray = [];
+                var tech4DevPocArray = [];
                 i = i + partnerPocs.length;
                 // find the partner poc for active projects
-                projectPocDetails.push({ 'Project ID': projectID, 'Project Name': projectName, 'Partner Poc': pocArray, 'activity exists': false });
+                projectPocDetails.push({ 'Project ID': projectID, 'Project Name': projectName, 'Partner Poc': pocArray, 'Tech4Dev PoC': tech4DevPocArray , 'activity exists': false });
+                console.log("tech4DevPocs ",tech4DevPocs);
+                tech4DevPocs.forEach(function (tech4DevPoc) {
+                    base('Contacts').find(tech4DevPoc, function (err, record) {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        } else {
+                            projectPocDetails.forEach(function (projectPocDetail) {
+                                if (projectName == projectPocDetail['Project Name']) {
+                                    var pocName = record.get('Name');
+                                    var pocEmail = record.get('Email');
+                                    projectPocDetail['Tech4Dev PoC'].push({ 'Name': pocName, 'Email': pocEmail });
+                                }
+                            });
+                        }
+                    });
+                });
                 partnerPocs.forEach(function (partnerPoc) {
                     base('Contacts').find(partnerPoc, function (err, record) {
                         j = j + 1;
@@ -312,12 +335,19 @@ var getPocEmailId = function (pocDetails, msg, addCc) {
             var projectName = pocDetail['Project Name'];
             var names = "";
             var emails = "";
+            var ccEmails = "";
             pocDetail['Partner Poc'].forEach(function (pocNameEmail, index) {
                 names += pocNameEmail['Name'];
                 emails += pocNameEmail['Email'];
                 if (index < pocDetail['Partner Poc'].length - 1) {
                     names += "/ ";
                     emails += ", ";
+                }
+            });
+            pocDetail['Tech4Dev PoC'].forEach(function (pocNameEmail, index) {
+                ccEmails += pocNameEmail['Email'];
+                if (index < pocDetail['Tech4Dev PoC'].length - 1) {
+                    ccEmails += ", ";
                 }
             });
             var subject = 'Weekly Project Status Reminder';
@@ -327,7 +357,7 @@ var getPocEmailId = function (pocDetails, msg, addCc) {
             <p><a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a></p>
             <p>Thanks,</p>
             <p>Tech4Dev Team</p>`;
-            transporter(projectName, names, emails, subject, body, addCc);
+            transporter(projectName, names, emails, ccEmails, subject, body, addCc);
         }
     });
 }

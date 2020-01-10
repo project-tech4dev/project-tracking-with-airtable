@@ -56,7 +56,7 @@ router.get('/firstCohort', (req, res, next) => {
     }).base('appfO9PMTzzFk9466');
     base('Projects').select({
         // Selecting the first 25 records in Main View:
-        view: "Cohort wise report"
+        view: "Cohort wise report (Do not modify)"
     }).eachPage(function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
         records.forEach(function (record) {
@@ -67,6 +67,7 @@ router.get('/firstCohort', (req, res, next) => {
             var spName = record.get('SP Name');
             var description = record.get('Description');
             var estimatedWeeks = record.get('Estimated Weeks');
+            var weeksSpent = record.get('Weeks Spent');
             var status = record.get('Status');
             var grade = record.get('Grade');
             var projectCost = record.get('Project Cost');
@@ -77,8 +78,6 @@ router.get('/firstCohort', (req, res, next) => {
                     usdProjectCost = usdProjectCost / usdRates;
                 }
 
-
-                console.log("jhgjhg" + projectCost);
                 firstCohortProjects.push({
                     'projectId': projectId,
                     'ngoName': ngoName[0],
@@ -87,13 +86,15 @@ router.get('/firstCohort', (req, res, next) => {
                     'spName': spName[0],
                     'description': description,
                     'estimatedWeeks': estimatedWeeks,
+                    'weeksSpent': weeksSpent,
                     'status': status,
                     'grade': grade,
                     'projectCost': projectCost != undefined ? formatterINR.format(projectCost) : "",
                     'usdProjectCost': usdProjectCost != undefined ? formatterUSD.format(usdProjectCost) : "",
                     'toolsUsed': toolsUsed,
                     'completed': "",
-                    'comments': ""
+                    'comments': "",
+                    'blog': ""
                 });
             }
         });
@@ -111,9 +112,10 @@ router.get('/firstCohort', (req, res, next) => {
             firstCohortProjects.forEach(function (firstCohortProject, index) {
                 ngoCount++;
                 var projectID = firstCohortProject['projectId'];
-                var activityPreviewExist = false;
                 var comment = "";
                 var percentCompleted = "";
+                var hoursSpent = 0;
+                var linkToBlog = "";
 
                 base('Activity').select({
                     view: "Cohort Project Status (Do not modify)"
@@ -126,7 +128,14 @@ router.get('/firstCohort', (req, res, next) => {
                             if (comment != "") {
                                 comment += ", ";
                             }
+                            hoursSpent += record.get('Hours spent');
                             percentCompleted = record.get('% Completed');
+                            if (record.get('Link to Blog') != undefined) {
+                                linkToBlog += record.get('Link to Blog');
+                                if (linkToBlog != "") {
+                                    linkToBlog += ", ";
+                                }
+                            }
                         }
                     });
                     fetchNextPage();
@@ -138,10 +147,10 @@ router.get('/firstCohort', (req, res, next) => {
                         tempNgoCount++;
                         firstCohortProject["completed"] = percentCompleted;
                         firstCohortProject["comments"] = comment.replace(/,\s*$/, "");
+                        firstCohortProject["weeksSpent"] = hoursSpent != 0 ? (hoursSpent / 40).toFixed(2) : "0";
+                        firstCohortProject["blog"] = linkToBlog.replace(/,\s*$/, "");
 
                         if (ngoCount == tempNgoCount) {
-                            console.log('completed ', firstCohortProject['completed']);
-                            console.log('ngo name ', firstCohortProject['ngoName']);
                             const workbook = new Excel.Workbook();
                             const worksheet = workbook.addWorksheet('First Cohort');
 
@@ -152,14 +161,16 @@ router.get('/firstCohort', (req, res, next) => {
                                 { header: 'NGO Mission', key: 'ngoMission', width: 20 },
                                 { header: 'SP Name', key: 'spName', width: 20 },
                                 { header: 'Project Description', key: 'description', width: 40 },
-                                { header: 'Weeks Spent', key: 'estimatedWeeks', width: 20 },
+                                { header: 'Estimated Weeks', key: 'estimatedWeeks', width: 20 },
+                                { header: 'Weeks Spent', key: 'weeksSpent', width: 20 },
                                 { header: 'Project Stage', key: 'status', width: 20 },
                                 { header: '% Completed', key: 'completed', width: 20 },
                                 { header: 'Grade', key: 'grade', width: 20 },
                                 { header: 'Project Cost (INR)', key: 'projectCost', width: 20 },
                                 { header: 'Project Cost (USD)', key: 'usdProjectCost', width: 20 },
                                 { header: 'Tools Used', key: 'toolsUsed', width: 20 },
-                                { header: 'Comments', key: 'comments', width: 80 }
+                                { header: 'Comments', key: 'comments', width: 80 },
+                                { header: 'Link to blog', key: 'blog', width: 80 }
                             ];
 
                             var i = 0;
@@ -167,14 +178,28 @@ router.get('/firstCohort', (req, res, next) => {
                             worksheet.addRows(firstCohortProjects);
                             var rowCount = worksheet.rowCount;
                             for (i = 1; i <= rowCount; i++) {
+                                let row = worksheet.getRow(i);
+                                if (row === null || !row.values || !row.values.length) return [];
+
+                                row.alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' };
                                 if (i == 1) {
-                                    let row = worksheet.getRow(i);
-                                    if (row === null || !row.values || !row.values.length) return [];
                                     for (j = 1; j <= row.values.length; j++) {
                                         row.getCell(j).font = { bold: true };
                                     }
                                 }
-                                worksheet.getRow(i).alignment = { wrapText: true, vertical: 'middle', horizontal: 'center' };
+                                /*if (i > 1) {
+                                    for (j = 1; j <= row.values.length; j++) {
+                                        if (j == (row.values.length - 1)) {
+                                            var blogLink = row.getCell(j).text;
+                                            if (blogLink != "") {
+                                                row.getCell(j).value = {
+                                                    text: blogLink,
+                                                    hyperlink: blogLink
+                                                };
+                                            }
+                                        }
+                                    }
+                                }*/
                             }
 
                             var fileName = 'First_Cohort_Report.xlsx';

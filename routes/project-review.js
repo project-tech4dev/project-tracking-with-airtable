@@ -84,7 +84,7 @@ router.get('/project_review', (req, res, next) => {
                         <p> Thanks & Regards,</p>
                         <p> Tech4Dev</p>`;
                         if (!activityPreviewExist)
-                            transporter(projectName, "", process.env.FROM_EMAIL, subject, body, false);
+                            transporter(projectName, "", process.env.FROM_EMAIL, null, subject, body, false);
                     }
                 });
             });

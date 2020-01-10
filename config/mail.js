@@ -8,7 +8,7 @@ var optionMail = {
 }
 var transporter = nodemailer.createTransport(optionMail);
 
-var sendEmail = function (projectName, pocName, pocEmails, subject, body, addCc) {
+var sendEmail = function (projectName, pocName, pocEmails, pocCcEmails, subject, body, addCc) {
     let toEmail = pocEmails;
     if (process.env.DEBUG == 1) {
         toEmail = process.env.DEBUG_EMAIL;
@@ -21,7 +21,12 @@ var sendEmail = function (projectName, pocName, pocEmails, subject, body, addCc)
         html: body
     };
     if (addCc == true) {
-        mailOptions.cc = process.env.REPORTING_EMAIL;
+        if(pocCcEmails){
+            mailOptions.cc = pocCcEmails;
+            console.log("mail cc ", pocCcEmails);
+        }else{
+            mailOptions.cc = process.env.REPORTING_EMAIL;
+        }
     }
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {

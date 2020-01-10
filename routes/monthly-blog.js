@@ -108,11 +108,11 @@ var getPocEmailId = function (pocDetails) {
             });
             var subject = 'Monthly Blog Reminder';
             var body = `<p>Dear ${names},</p>
-            <p>This email is a gentle reminder to submit a blog for the project '${projectName}'. 
+            <p>This email is a gentle reminder to post a blog for the project '${projectName}'. 
             <p>Please include the blog URL in your weekly status report.</p>
             <p>Thanks, </p> 
             <p>Tech4Dev Team</p>`
-            transporter(projectName, names, emails, subject, body, false);
+            transporter(projectName, names, emails, null, subject, body, false);
         }
     });
 }

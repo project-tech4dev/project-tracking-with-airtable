@@ -192,7 +192,7 @@ var sendTaskReminder = function (targetID, body, subject, base) {
         } else {
             var targetEmail = record.get('Email');
             body = "<p>Dear " + record.get('Name') + ",</p>" + body + "<p> Thanks, <br> Tech4Dev Team</p>";
-            transporter("", "", targetEmail, subject, body, false);
+            transporter("", "", targetEmail, null, subject, body, false);
         }
     });
 }

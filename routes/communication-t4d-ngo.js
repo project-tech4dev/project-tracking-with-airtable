@@ -134,7 +134,7 @@ var getPocEmailId = function (pocDetails) {
             <p> <a href="https://airtable.com/shr8F6DTv44XZWIMr">https://airtable.com/shr8F6DTv44XZWIMr</a> </p>
             <p> Thanks, </p> 
             <p> Tech4Dev Team</p>`;
-            transporter(projectName, "", process.env.FROM_EMAIL, subject, body, false);
+            transporter(projectName, "", process.env.FROM_EMAIL, null, subject, body, false);
         }
     });
 }

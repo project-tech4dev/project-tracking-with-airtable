@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const dotenv = require("dotenv");
 const Excel = require("exceljs");
-const getExchangeRates = require("get-exchange-rates-usd");
-var Promise = require("bluebird");
 const formatterUSD = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",

@@ -7,22 +7,15 @@ var Promise = require("bluebird");
 const formatterUSD = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
-  minimumFractionDigits: 2
+  minimumFractionDigits: 0
 });
 const formatterINR = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",
-  minimumFractionDigits: 2
+  minimumFractionDigits: 0
 });
 dotenv.config();
-var usdRates = 1;
-Promise.try(function() {
-  return getExchangeRates();
-}).then(function(rates) {
-  if (rates) {
-    usdRates = rates.INR;
-  }
-});
+var USDtoINRConversionRate = 70;
 
 router.get("", (req, res, next) => {
   const baseTemplate = `<html>
@@ -74,11 +67,11 @@ router.get("/firstCohort", (req, res, next) => {
           var status = record.get("Status");
           var grade = record.get("Grade");
           var projectCost = record.get("Project Cost");
-          var usdProjectCost = record.get("Project Cost");
+          var usdProjectCost = "";
           var toolsUsed = record.get("Tools Used");
           if (ngoName) {
-            if (usdProjectCost) {
-              usdProjectCost = usdProjectCost / usdRates;
+            if (projectCost) {
+              usdProjectCost = Math.round(projectCost / USDtoINRConversionRate);
             }
 
             firstCohortProjects.push({
@@ -234,19 +227,6 @@ router.get("/firstCohort", (req, res, next) => {
                             row.getCell(j).font = { bold: true };
                           }
                         }
-                        /*if (i > 1) {
-                                            for (j = 1; j <= row.values.length; j++) {
-                                                if (j == (row.values.length - 1)) {
-                                                    var blogLink = row.getCell(j).text;
-                                                    if (blogLink != "") {
-                                                        row.getCell(j).value = {
-                                                            text: blogLink,
-                                                            hyperlink: blogLink
-                                                        };
-                                                    }
-                                                }
-                                            }
-                                        }*/
                       }
 
                       var fileName = "First_Cohort_Report.xlsx";

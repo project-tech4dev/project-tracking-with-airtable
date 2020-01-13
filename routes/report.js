@@ -53,7 +53,7 @@ router.get("/firstCohort", (req, res, next) => {
     .eachPage(
       function page(records, fetchNextPage) {
         // This function (`page`) will get called for each page of records.
-        records.forEach(function(record) {
+        records.forEach(function (record) {
           var projectId = record.id;
           var ngoName = record.get("NGO Name");
           var ngoSector = record.get("NGO Sector");
@@ -67,6 +67,9 @@ router.get("/firstCohort", (req, res, next) => {
           var projectCost = record.get("Project Cost");
           var usdProjectCost = "";
           var toolsUsed = record.get("Tools Used");
+          var startDate = record.get("Start Date");
+          var endDate = record.get("End Date");
+          var handoverDate = record.get("Handover Date");
           if (ngoName) {
             if (projectCost) {
               usdProjectCost = Math.round(projectCost / USDtoINRConversionRate);
@@ -94,7 +97,10 @@ router.get("/firstCohort", (req, res, next) => {
               toolsUsed: toolsUsed,
               completed: "",
               comments: "",
-              blog: ""
+              blog: "",
+              startDate: startDate,
+              endDate: endDate,
+              handoverDate: handoverDate
             });
           }
         });
@@ -110,7 +116,7 @@ router.get("/firstCohort", (req, res, next) => {
         } else {
           var ngoCount = 0;
           var tempNgoCount = 0;
-          firstCohortProjects.forEach(function(firstCohortProject, index) {
+          firstCohortProjects.forEach(function (firstCohortProject, index) {
             ngoCount++;
             var projectID = firstCohortProject["projectId"];
             var comment = "";
@@ -125,7 +131,7 @@ router.get("/firstCohort", (req, res, next) => {
               .eachPage(
                 function page(records, fetchNextPage) {
                   // This function (`page`) will get called for each page of records.
-                  records.forEach(function(record) {
+                  records.forEach(function (record) {
                     var project = record.get("Project");
                     if (projectID == project) {
                       comment += record.get("Comments");
@@ -203,7 +209,11 @@ router.get("/firstCohort", (req, res, next) => {
                         },
                         { header: "Tools Used", key: "toolsUsed", width: 20 },
                         { header: "Comments", key: "comments", width: 80 },
-                        { header: "Link to blog", key: "blog", width: 80 }
+                        { header: "Link to blog", key: "blog", width: 80 },
+                        { header: "Start Date", key: "startDate", width: 20 },
+                        { header: "End Date", key: "endDate", width: 20 },
+                        { header: "Handover Date", key: "handoverDate", width: 20 }
+                        
                       ];
 
                       var i = 0;
@@ -238,7 +248,7 @@ router.get("/firstCohort", (req, res, next) => {
                         "attachment; filename=" + fileName
                       );
 
-                      workbook.xlsx.write(res).then(function() {
+                      workbook.xlsx.write(res).then(function () {
                         res.end();
                       });
                     }

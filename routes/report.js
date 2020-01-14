@@ -64,15 +64,15 @@ router.get("/firstCohort", (req, res, next) => {
           var weeksSpent = record.get("Weeks Spent");
           var status = record.get("Status");
           var grade = record.get("Grade");
-          var projectCost = record.get("Project Cost");
-          var usdProjectCost = "";
+          var inrProjectCost = "";
+          var usdProjectCost = record.get("Project Cost");
           var toolsUsed = record.get("Tools Used");
           var startDate = record.get("Start Date");
           var endDate = record.get("End Date");
           var handoverDate = record.get("Handover Date");
           if (ngoName) {
-            if (projectCost) {
-              usdProjectCost = Math.round(projectCost / USDtoINRConversionRate);
+            if (usdProjectCost) {
+              inrProjectCost = Math.round(usdProjectCost * USDtoINRConversionRate);
             }
 
             firstCohortProjects.push({
@@ -86,9 +86,9 @@ router.get("/firstCohort", (req, res, next) => {
               weeksSpent: weeksSpent,
               status: status,
               grade: grade,
-              projectCost:
-                projectCost != undefined
-                  ? formatterINR.format(projectCost)
+              inrProjectCost:
+                inrProjectCost != undefined
+                  ? formatterINR.format(inrProjectCost)
                   : "",
               usdProjectCost:
                 usdProjectCost != undefined
@@ -198,15 +198,15 @@ router.get("/firstCohort", (req, res, next) => {
                         { header: "% Completed", key: "completed", width: 20 },
                         { header: "Grade", key: "grade", width: 20 },
                         {
-                          header: "Project Cost (INR)",
-                          key: "projectCost",
-                          width: 20
-                        },
-                        {
                           header: "Project Cost (USD)",
                           key: "usdProjectCost",
                           width: 20
                         },
+                        {
+                          header: "Project Cost (INR)",
+                          key: "inrProjectCost",
+                          width: 20
+                        },                        
                         { header: "Tools Used", key: "toolsUsed", width: 20 },
                         { header: "Comments", key: "comments", width: 80 },
                         { header: "Link to blog", key: "blog", width: 80 },

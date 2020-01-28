@@ -65,7 +65,7 @@ router.get("/firstCohort", (req, res, next) => {
           var status = record.get("Status");
           var grade = record.get("Grade");
           var inrProjectCost = "";
-          var usdProjectCost = record.get("Project Cost");
+          var usdProjectCost = record.get("Invoice Cost");
           var toolsUsed = record.get("Tools Used");
           var startDate = record.get("Start Date");
           var endDate = record.get("End Date");
@@ -198,12 +198,12 @@ router.get("/firstCohort", (req, res, next) => {
                         { header: "% Completed", key: "completed", width: 20 },
                         { header: "Grade", key: "grade", width: 20 },
                         {
-                          header: "Project Cost (USD)",
+                          header: "Invoice Cost (USD)",
                           key: "usdProjectCost",
                           width: 20
                         },
                         {
-                          header: "Project Cost (INR)",
+                          header: "Invoice Cost (INR)",
                           key: "inrProjectCost",
                           width: 20
                         },                        

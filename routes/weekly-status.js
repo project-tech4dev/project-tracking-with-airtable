@@ -242,15 +242,15 @@ router.get('/wednesdayreminder', (req, res, next) => {
                 var projectName = pocs['Project Name'];
                 var partnerPocs = pocs['Partner Poc'];
                 var tech4DevPocs = pocs['Tech4Dev PoC'];
-                if(!tech4DevPocs){
-                    tech4DevPocs=[];
+                if (!tech4DevPocs) {
+                    tech4DevPocs = [];
                 }
                 var pocArray = [];
                 var tech4DevPocArray = [];
                 i = i + partnerPocs.length;
                 // find the partner poc for active projects
-                projectPocDetails.push({ 'Project ID': projectID, 'Project Name': projectName, 'Partner Poc': pocArray, 'Tech4Dev PoC': tech4DevPocArray , 'activity exists': false });
-                console.log("tech4DevPocs ",tech4DevPocs);
+                projectPocDetails.push({ 'Project ID': projectID, 'Project Name': projectName, 'Partner Poc': pocArray, 'Tech4Dev PoC': tech4DevPocArray, 'activity exists': false });
+                console.log("tech4DevPocs ", tech4DevPocs);
                 tech4DevPocs.forEach(function (tech4DevPoc) {
                     base('Contacts').find(tech4DevPoc, function (err, record) {
                         if (err) {
@@ -336,20 +336,24 @@ var getPocEmailId = function (pocDetails, msg, addCc) {
             var names = "";
             var emails = "";
             var ccEmails = "";
-            pocDetail['Partner Poc'].forEach(function (pocNameEmail, index) {
-                names += pocNameEmail['Name'];
-                emails += pocNameEmail['Email'];
-                if (index < pocDetail['Partner Poc'].length - 1) {
-                    names += "/ ";
-                    emails += ", ";
-                }
-            });
-            pocDetail['Tech4Dev PoC'].forEach(function (pocNameEmail, index) {
-                ccEmails += pocNameEmail['Email'];
-                if (index < pocDetail['Tech4Dev PoC'].length - 1) {
-                    ccEmails += ", ";
-                }
-            });
+            if (pocDetail['Partner Poc']) {
+                pocDetail['Partner Poc'].forEach(function (pocNameEmail, index) {
+                    names += pocNameEmail['Name'];
+                    emails += pocNameEmail['Email'];
+                    if (index < pocDetail['Partner Poc'].length - 1) {
+                        names += "/ ";
+                        emails += ", ";
+                    }
+                });
+            }
+            if (pocDetail['Tech4Dev PoC']) {
+                pocDetail['Tech4Dev PoC'].forEach(function (pocNameEmail, index) {
+                    ccEmails += pocNameEmail['Email'];
+                    if (index < pocDetail['Tech4Dev PoC'].length - 1) {
+                        ccEmails += ", ";
+                    }
+                });
+            }
             var subject = 'Weekly Project Status Reminder';
             var body = `<p>Dear ${names},</p>
             <p>${msg} '${projectName}'.</p>

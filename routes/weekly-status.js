@@ -90,8 +90,13 @@ router.get('/fridayreminder', (req, res, next) => {
                             var today = new Date();
                             var previousDate = moment(today.setDate(today.getDate() - 4)).format('MMM-DD');
                             var nextDate = moment(today.setDate(today.getDate() + 5)).format('MMM-DD');
+
+                            var dateToFormat = moment(previousDate, 'MMM-DD'); 
+                            var formattedDate = moment(dateToFormat).format("MM/DD");
+
+                            
                             var fridayMsg = "This is a gentle reminder to fill the weekly project status report for the work done during the period: " + previousDate + " to " + nextDate + " by Monday for the project ";
-                            getPocEmailId(projectPocDetails, fridayMsg, false);
+                            getPocEmailId(projectPocDetails, fridayMsg, false, formattedDate);
                             res.status(200).end("Friday reminder sent successfully!");
                         }
                     });
@@ -185,9 +190,13 @@ router.get('/mondayreminder', (req, res, next) => {
                                         var today = new Date();
                                         var previousDate = moment(today.setDate(today.getDate() - 7)).format('MMM-DD');
                                         var nextDate = moment(today.setDate(today.getDate() + 5)).format('MMM-DD');
+
+                                        var dateToFormat = moment(previousDate, 'MMM-DD'); 
+                                        var formattedDate = moment(dateToFormat).format("MM/DD");
+
                                         var mondayMsg = "You have not filled the weekly project status report for the work done during the period: " + previousDate + " to " + nextDate + " for the project ";
                                         projectPocDetail['activity exists'] = activityExists;
-                                        getPocEmailId([projectPocDetail], mondayMsg, false);
+                                        getPocEmailId([projectPocDetail], mondayMsg, false, formattedDate);
                                     }
                                 });
                             });
@@ -310,9 +319,13 @@ router.get('/wednesdayreminder', (req, res, next) => {
                                         var today = new Date();
                                         var previousDate = moment(today.setDate(today.getDate() - 9)).format('MMM-DD');
                                         var nextDate = moment(today.setDate(today.getDate() + 5)).format('MMM-DD');
+
+                                        var dateToFormat = moment(previousDate, 'MMM-DD'); 
+                                        var formattedDate = moment(dateToFormat).format("MM/DD");
+                                        
                                         var wednesdayMsg = "You have not filled the weekly project status report for the work done during the period: " + previousDate + " to " + nextDate + " for the project ";
                                         projectPocDetail['activity exists'] = activityExists;
-                                        getPocEmailId([projectPocDetail], wednesdayMsg, true);
+                                        getPocEmailId([projectPocDetail], wednesdayMsg, true, formattedDate);
                                     }
                                 });
                             });
@@ -329,7 +342,7 @@ router.get('/wednesdayreminder', (req, res, next) => {
 
 
 // send a reminder email to add weekly status activity
-var getPocEmailId = function (pocDetails, msg, addCc) {
+var getPocEmailId = function (pocDetails, msg, addCc, dateParameter) {
     pocDetails.forEach(function (pocDetail) {
         if (pocDetail['activity exists'] == false) {
             var projectName = pocDetail['Project Name'];
@@ -341,7 +354,7 @@ var getPocEmailId = function (pocDetails, msg, addCc) {
                     names += pocNameEmail['Name'];
                     emails += pocNameEmail['Email'];
                     if (index < pocDetail['Partner Poc'].length - 1) {
-                        names += "/ ";
+                        names += "/";
                         emails += ", ";
                     }
                 });
@@ -354,11 +367,20 @@ var getPocEmailId = function (pocDetails, msg, addCc) {
                     }
                 });
             }
+            // var today = new Date();
+            // var previousDate = moment(today.setDate(today.getDate() - 4)).format('MMM-DD');
+            // console.log("today",today );
+            // console.log("previous date",previousDate );
+            //names.replace("/ ","/").replace(/\ /g,"+").replace("//",",")
+            //console.log("names",names)
+            var formattedNames = names.replace(" /","/").replace(/\//g, ",").replace(/\ /g,"+");
+            //console.log("formattedNames",formattedNames)
+
             var subject = 'Weekly Project Status Reminder';
             var body = `<p>Dear ${names},</p>
             <p>${msg} '${projectName}'.</p>
             <p>You can submit it using below link.</p>
-            <p><a href="https://airtable.com/shrMG7SOe8kqlOcvn">https://airtable.com/shrMG7SOe8kqlOcvn</a></p>
+            <p><a href="https://airtable.com/shrMG7SOe8kqlOcvn?prefill_Date=${dateParameter}&prefill_Type=Weekly+Status&prefill_Project=${projectName.replace(/\ /g,"+")}&prefill_Reporter=${formattedNames}>https://airtable.com/shrMG7SOe8kqlOcvn</a></p>
             <p>Thanks,</p>
             <p>Tech4Dev Team</p>`;
             transporter(projectName, names, emails, ccEmails, subject, body, addCc);

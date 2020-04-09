@@ -351,7 +351,8 @@ var getPocEmailId = function (pocDetails, msg, addCc, dateParameter) {
             var ccEmails = "";
             if (pocDetail['Partner Poc']) {
                 pocDetail['Partner Poc'].forEach(function (pocNameEmail, index) {
-                    names += pocNameEmail['Name'];
+                    var pocEmailName = pocNameEmail['Name'].trim().replace(/\s+/g, " ");
+                    names += pocEmailName;
                     emails += pocNameEmail['Email'];
                     if (index < pocDetail['Partner Poc'].length - 1) {
                         names += "/";
@@ -367,20 +368,15 @@ var getPocEmailId = function (pocDetails, msg, addCc, dateParameter) {
                     }
                 });
             }
-            // var today = new Date();
-            // var previousDate = moment(today.setDate(today.getDate() - 4)).format('MMM-DD');
-            // console.log("today",today );
-            // console.log("previous date",previousDate );
-            //names.replace("/ ","/").replace(/\ /g,"+").replace("//",",")
-            //console.log("names",names)
-            var formattedNames = names.replace(" /","/").replace(/\//g, ",").replace(/\ /g,"+");
-            //console.log("formattedNames",formattedNames)
+            
+            var formattedNames = names.replace(/\//g, ",").replace(/\ /g,"+");
+            var formattedProjectNames = projectName.replace(/\ /g,"+");
 
             var subject = 'Weekly Project Status Reminder';
             var body = `<p>Dear ${names},</p>
             <p>${msg} '${projectName}'.</p>
             <p>You can submit it using below link.</p>
-            <p><a href="https://airtable.com/shrMG7SOe8kqlOcvn?prefill_Date=${dateParameter}&prefill_Type=Weekly+Status&prefill_Project=${projectName.replace(/\ /g,"+")}&prefill_Reporter=${formattedNames}>https://airtable.com/shrMG7SOe8kqlOcvn</a></p>
+            <p><a href="https://airtable.com/shrMG7SOe8kqlOcvn?prefill_Date=${dateParameter}&prefill_Type=Weekly+Status&prefill_Project=${formattedProjectNames}&prefill_Reporter=${formattedNames}">https://airtable.com/shrMG7SOe8kqlOcvn</a></p>
             <p>Thanks,</p>
             <p>Tech4Dev Team</p>`;
             transporter(projectName, names, emails, ccEmails, subject, body, addCc);

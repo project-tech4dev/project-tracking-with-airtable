@@ -30,7 +30,7 @@
     "dotenv": "^8.1.0",
     "exceljs": "^3.5.0",
     "express": "^4.17.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "nodemailer": "^6.3.0",
     "nodemailer-sendgrid-transport": "^0.2.0"
   },
